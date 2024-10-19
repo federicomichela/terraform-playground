@@ -8,7 +8,6 @@ output "instance_public_ip" {
   value       = aws_instance.app_server.public_ip
 }
 
-output "bucket_name" {
-  description = "The name of the S3 bucket"
-  value       = aws_s3_bucket.my_bucket.bucket
+output "website_url" {
+  value = aws_s3_bucket_website_configuration.website_config.website_endpoint
 }
