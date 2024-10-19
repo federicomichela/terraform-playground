@@ -107,3 +107,33 @@ resource "aws_s3_bucket_ownership_controls" "ownership_controls" {
 resource "random_id" "bucket_suffix" {
   byte_length = 4
 }
+
+# IAM policy for the infra-admin user, dynamically referencing the S3 bucket name
+resource "aws_iam_policy" "s3_bucket_policy" {
+  name   = "S3BucketAccess-${var.s3_bucket_name}${random_id.bucket_suffix.hex}"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:ListBucket",
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:DeleteObject"
+        ]
+        Resource = [
+          "arn:aws:s3:::${aws_s3_bucket.website_bucket.bucket}",
+          "arn:aws:s3:::${aws_s3_bucket.website_bucket.bucket}/*"
+        ]
+      }
+    ]
+  })
+}
+
+# Attach the IAM policy to the infra-admin IAM user (or you could attach it to a role)
+resource "aws_iam_user_policy_attachment" "attach_s3_policy" {
+  user       = "infra-admin"  # Replace with your IAM user or role
+  policy_arn = aws_iam_policy.s3_bucket_policy.arn
+}
