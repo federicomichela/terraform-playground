@@ -27,6 +27,11 @@ provider "aws" {
 resource "aws_iam_policy" "s3_bucket_policy" {
   name   = "S3BucketAccess-${var.s3_bucket_name}${random_id.bucket_suffix.hex}"
 
+  depends_on = [
+    aws_s3_bucket.website_bucket,       # Ensure the S3 bucket exists first
+    aws_s3_bucket_policy.website_bucket_policy  # Ensure bucket policy is applied
+  ]
+
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -51,6 +56,10 @@ resource "aws_iam_policy" "s3_bucket_policy" {
 resource "aws_iam_user_policy_attachment" "attach_s3_policy" {
   user       = "infra-admin"  # Replace with your IAM user or role
   policy_arn = aws_iam_policy.s3_bucket_policy.arn
+
+  depends_on = [
+    aws_iam_policy.s3_bucket_policy  # Ensure the policy exists before attachment
+  ]
 }
 
 # S3 bucket for website
@@ -100,6 +109,11 @@ resource "aws_s3_bucket_ownership_controls" "ownership_controls" {
 resource "aws_s3_bucket_policy" "website_bucket_policy" {
   provider = aws.virginia
   bucket   = aws_s3_bucket.website_bucket.id
+
+  depends_on = [
+    aws_s3_bucket_public_access_block.public_access,
+    aws_s3_bucket_ownership_controls.ownership_controls
+  ]
 
   policy = <<EOF
 {
