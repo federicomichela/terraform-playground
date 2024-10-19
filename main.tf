@@ -42,7 +42,7 @@ resource "aws_instance" "app_server" {
 
 # S3 bucket for website
 resource "aws_s3_bucket" "website_bucket" {
-  provider = aws.california
+  provider = aws.virginia
   bucket   = "${var.s3_bucket_name}${random_id.bucket_suffix.hex}"
 
   tags = {
@@ -53,7 +53,7 @@ resource "aws_s3_bucket" "website_bucket" {
 
 # Separate resource for website configuration
 resource "aws_s3_bucket_website_configuration" "website_config" {
-  provider = aws.california
+  provider = aws.virginia
   bucket   = aws_s3_bucket.website_bucket.bucket
 
   index_document {
@@ -67,7 +67,7 @@ resource "aws_s3_bucket_website_configuration" "website_config" {
 
 # Bucket policy for public access
 resource "aws_s3_bucket_policy" "website_bucket_policy" {
-  provider = aws.california
+  provider = aws.virginia
   bucket   = aws_s3_bucket.website_bucket.id
 
   policy = <<EOF
@@ -87,7 +87,7 @@ EOF
 
 # Public access block for the bucket
 resource "aws_s3_bucket_public_access_block" "public_access" {
-  provider          = aws.california
+  provider          = aws.virginia
   bucket            = aws_s3_bucket.website_bucket.id
   block_public_acls = true
   block_public_policy = false
@@ -95,7 +95,7 @@ resource "aws_s3_bucket_public_access_block" "public_access" {
 
 # Bucket ownership controls
 resource "aws_s3_bucket_ownership_controls" "ownership_controls" {
-  provider = aws.california
+  provider = aws.virginia
   bucket   = aws_s3_bucket.website_bucket.id
 
   rule {
